@@ -11,54 +11,29 @@
         #loader { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: white; z-index: 100; text-align: center; }
         #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        
         .glass-input { background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 28px; }
-        
         #chat-ui { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 94%; max-width: 800px; display: none; z-index: 50; }
         #history { max-height: 45vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         #history::-webkit-scrollbar { width: 0; }
-        
         .btn-start { background: white; color: #0369a1; padding: 15px 40px; border-radius: 50px; font-weight: bold; cursor: pointer; border: none; }
-        
         .msg-bubble { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; font-weight: 600; line-height: 1.4; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
         .msg-user { background: rgba(14, 165, 233, 0.5); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        
-        /* Transparencia cristalina para Jesús */
-        .msg-christ { 
-            background: rgba(255, 255, 255, 0.2) !important; 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-            color: #ffffff; 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-            align-self: flex-start; 
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-bottom-left-radius: 4px;
-        }
-
+        .msg-christ { background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px); color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); align-self: flex-start; border: 1px solid rgba(255, 255, 255, 0.15); border-bottom-left-radius: 4px; }
         .top-header { position: fixed; top: 15px; left: 0; right: 0; text-align: center; z-index: 40; color: white; font-weight: bold; text-shadow: 0 2px 4px #000; display: none; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div class="mb-6">
-            <svg width="50" height="50" viewBox="0 0 24 24" fill="#7dd3fc">
-                <path d="M12 2L15 8.5L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L9 8.5L12 2Z"/>
-            </svg>
-        </div>
+        <div class="mb-6"><svg width="50" height="50" viewBox="0 0 24 24" fill="#7dd3fc"><path d="M12 2L15 8.5L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L9 8.5L12 2Z"/></svg></div>
         <p class="text-lg mb-8 italic px-4 text-center">Invocando presencia divina... <br><span class="text-sm opacity-60">Conexión por Axeltech</span></p>
         <button id="startBtn" class="btn-start">ENTRAR EN COMUNIÓN</button>
     </div>
 
     <div id="video-container">
-        <video id="video-idle" loop muted playsinline>
-            <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
-        </video>
-        <video id="video-talking" loop muted playsinline style="display:none;">
-            <source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4">
-        </video>
+        <video id="video-idle" loop muted playsinline><source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4"></video>
+        <video id="video-talking" loop muted playsinline style="display:none;"><source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4"></video>
     </div>
 
     <div id="top-title" class="top-header">✨ Jesucristo ✨</div>
@@ -68,14 +43,13 @@
         <div class="glass-input p-3 flex gap-3 items-center mt-4">
             <input type="text" id="userInput" class="flex-1 bg-transparent border-none text-white outline-none font-bold placeholder:text-white/40 text-sm pl-2" placeholder="Habla con el Maestro...">
             <button id="sendBtn" class="bg-white/20 text-white p-2 rounded-xl">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
     </div>
 
     <script>
         const groqKey = "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";
-        
         const vIdle = document.getElementById('video-idle');
         const vTalk = document.getElementById('video-talking');
         const startBtn = document.getElementById('startBtn');
@@ -83,7 +57,6 @@
         const chatUi = document.getElementById('chat-ui');
         const historyDiv = document.getElementById('history');
         const userInput = document.getElementById('userInput');
-
         let currentAudio = null;
 
         function toggleTalk(talking) {
@@ -101,23 +74,17 @@
 
         async function speakWithPuter(text) {
             try {
-                if(currentAudio) {
-                    currentAudio.pause();
-                    currentAudio = null;
-                }
+                if(currentAudio) { currentAudio.pause(); currentAudio = null; }
                 
-                // Configuración de Puter para voz masculina
-                // Se utiliza el método correcto del SDK de Puter.js
-                const audio = await puter.ai.txt2speech(text, "male");
+                // CORRECCIÓN: Usamos el modelo 'onyx' para voz masculina solemne
+                const audio = await puter.ai.txt2speech(text, 'onyx');
                 currentAudio = audio;
                 
                 audio.addEventListener('play', () => toggleTalk(true));
                 audio.addEventListener('ended', () => { toggleTalk(false); currentAudio = null; });
                 audio.addEventListener('pause', () => toggleTalk(false));
-                audio.addEventListener('error', () => { toggleTalk(false); currentAudio = null; });
                 
                 audio.play().catch(e => console.error("Audio play failed:", e));
-
             } catch (e) {
                 console.error("Error Puter Voice:", e);
                 toggleTalk(false);
@@ -145,10 +112,8 @@
         async function send() {
             const text = userInput.value.trim();
             if(!text) return;
-
             userInput.value = "";
             addMsg(text, true);
-
             try {
                 const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: 'POST',
@@ -161,10 +126,8 @@
                         ]
                     })
                 });
-
                 const data = await resp.json();
                 const reply = data.choices[0].message.content;
-                
                 addMsg(reply, false);
                 await speakWithPuter(reply);
             } catch (e) {
@@ -177,4 +140,3 @@
     </script>
 </body>
 </html>
-
