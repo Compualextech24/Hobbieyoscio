@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jesucristo IA - Encuentro Divino</title>
+    <title>Hablando con el Maestro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería oficial de Puter -->
     <script src="https://js.puter.com/v2/"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', serif; }
@@ -51,7 +50,15 @@
         }
 
         #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        video { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: opacity 0.2s ease-in-out;
+        }
         
         .glass-input { 
             background: rgba(3, 105, 161, 0.25) !important; 
@@ -159,10 +166,11 @@
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
-        <video id="video-idle" loop muted playsinline preload="auto">
+        <!-- Videos con optimización de carga -->
+        <video id="video-idle" loop muted playsinline preload="auto" style="opacity: 1; z-index: 5;">
             <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
         </video>
-        <video id="video-talking" loop muted playsinline preload="auto" style="display:none;">
+        <video id="video-talking" loop muted playsinline preload="auto" style="opacity: 0; z-index: 4;">
             <source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4">
         </video>
     </div>
@@ -192,7 +200,6 @@
 
         let isProcessing = false;
 
-        // Mostrar botón cuando el DOM esté listo
         window.addEventListener('load', () => {
             setTimeout(() => {
                 startBtn.style.display = "block";
@@ -204,9 +211,9 @@
             document.getElementById('loader').style.display = "none";
             celestialWait.style.display = "flex";
             
-            // Forzar play del video base
-            vIdle.load();
-            vIdle.play().catch(e => console.log("Error video:", e));
+            // Asegurar que ambos videos estén listos
+            vIdle.play().catch(() => {});
+            vTalk.play().then(() => vTalk.pause()).catch(() => {});
             
             const greet = "Hola hijo mío, esta conexión fue posible gracias a Alex tecno, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
             speak(greet, true);
@@ -214,14 +221,18 @@
 
         function toggleTalk(isTalking) {
             if(isTalking) {
-                vIdle.style.display = "none";
-                vTalk.style.display = "block";
-                vTalk.play().catch(() => {});
-            } else {
-                vTalk.style.display = "none";
-                vIdle.style.display = "block";
-                vTalk.pause();
                 vTalk.currentTime = 0;
+                vTalk.play().catch(() => {});
+                vTalk.style.opacity = "1";
+                vTalk.style.zIndex = "10";
+                vIdle.style.opacity = "0";
+                vIdle.style.zIndex = "5";
+            } else {
+                vTalk.style.opacity = "0";
+                vTalk.style.zIndex = "5";
+                vIdle.style.opacity = "1";
+                vIdle.style.zIndex = "10";
+                setTimeout(() => vTalk.pause(), 200);
             }
         }
 
@@ -230,17 +241,11 @@
             progressBar.style.width = "40%";
 
             try {
-                // LLAMADA A PUTER TTS (MODELO ANDRÉS)
-                // Verificamos que puter esté disponible
-                if (typeof puter === 'undefined') {
-                    throw new Error("Puter no está cargado");
-                }
+                if (typeof puter === 'undefined') throw new Error("Puter offline");
 
                 const audio = await puter.ai.txt2speech(text, 'Andres');
-
                 progressBar.style.width = "100%";
                 
-                // Si es el inicio, quitamos el loader de espera YA
                 if(isInitial) {
                     celestialWait.style.display = "none";
                     mainTitle.style.display = "block";
@@ -262,9 +267,7 @@
                 }, 400);
 
             } catch (e) {
-                console.error("Error en Puter TTS:", e);
-                progressBar.style.opacity = "0";
-                // Si falla el audio, al menos mostramos la interfaz para que pueda chatear
+                console.error(e);
                 if(isInitial) {
                     celestialWait.style.display = "none";
                     mainTitle.style.display = "block";
@@ -308,7 +311,6 @@
                 addMsg(txt, false);
                 speak(txt);
             } catch (e) { 
-                console.error("Error en Groq:", e);
                 isProcessing = false; 
                 progressBar.style.opacity = "0";
             }
