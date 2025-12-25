@@ -142,7 +142,6 @@
         <div id="startBtn" class="btn-start" style="display: none;">ENTRAR EN COMUNIÓN</div>
     </div>
 
-    <!-- Pantalla de carga Celestial -->
     <div id="celestial-wait">
         <div class="spinner mb-6"></div>
         <p class="text-xl px-6 font-light italic text-blue-200">Esperando señal del cielo...</p>
@@ -192,15 +191,24 @@
         };
 
         async function start() {
+            console.log("🚀 Iniciando aplicación...");
             document.getElementById('loader').style.display = "none";
             celestialWait.style.display = "flex";
             
+            // Verificar Puter
+            if (typeof puter === 'undefined') {
+                console.error("❌ Puter no está disponible");
+                alert("Error: Puter no se cargó correctamente. Recarga la página.");
+                return;
+            }
+            console.log("✅ Puter está disponible");
+            
             // Forzar carga y reproducción inicial
-            vIdle.play().catch(() => {});
+            vIdle.play().catch(e => console.error("Error video idle:", e));
             vTalk.load(); 
 
             const greet = "Hola hijo mío, esta conexión fue posible gracias a Alex tecno, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
-            speak(greet, true);
+            await speak(greet, true);
         }
 
         function toggleTalk(isTalking) {
@@ -220,16 +228,28 @@
 
         async function speak(text, isInitial = false) {
             if (!isInitial) {
-                celestialWait.style.display = "flex"; // Mostramos espera mientras Puter procesa
+                celestialWait.style.display = "flex";
             }
 
             try {
-                if (typeof puter === 'undefined') throw new Error("Puter no cargado");
+                // Verificar que Puter esté disponible
+                if (typeof puter === 'undefined') {
+                    throw new Error("Puter no está cargado");
+                }
 
-                // Solicitar audio a Puter
-                const audio = await puter.ai.txt2speech(text, 'Andres');
+                console.log("🎤 Intentando generar audio con Puter...");
+                console.log("📝 Texto:", text);
+
+                // Solicitar audio a Puter con timeout
+                const audioPromise = puter.ai.txt2speech(text, 'Andres');
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Timeout en Puter")), 15000)
+                );
+
+                const audio = await Promise.race([audioPromise, timeoutPromise]);
                 
-                // Una vez tenemos el audio, quitamos la pantalla de espera
+                console.log("✅ Audio generado exitosamente");
+                
                 celestialWait.style.display = "none";
                 
                 if (isInitial) {
@@ -240,19 +260,34 @@
                 toggleTalk(true);
                 
                 audio.onended = () => {
+                    console.log("🔇 Audio terminado");
                     toggleTalk(false);
                     isProcessing = false;
                 };
 
-                audio.play();
+                audio.onerror = (e) => {
+                    console.error("❌ Error al reproducir audio:", e);
+                    toggleTalk(false);
+                    isProcessing = false;
+                };
+
+                await audio.play();
 
             } catch (e) {
-                console.error("Error en Audio:", e);
+                console.error("❌ Error completo en Audio:", e);
+                console.error("Tipo de error:", e.name);
+                console.error("Mensaje:", e.message);
+                
                 celestialWait.style.display = "none";
+                
                 if (isInitial) {
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
                 }
+                
+                // Mostrar error al usuario
+                addMsg("⚠️ Error al generar audio. Reintenta por favor.", false);
+                
                 isProcessing = false;
             }
         }
@@ -291,9 +326,9 @@
                 setTimeout(() => { progressBar.style.opacity = "0"; }, 500);
 
                 addMsg(txt, false);
-                speak(txt);
+                await speak(txt);
             } catch (e) { 
-                console.error("Error Groq:", e);
+                console.error("❌ Error Groq:", e);
                 isProcessing = false;
                 progressBar.style.opacity = "0";
             }
@@ -314,4 +349,3 @@
     </script>
 </body>
 </html>
-
