@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jesucristo IA - Encuentro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
+        #chat-ui { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 550px; display: none; z-index: 50; }
+        #history { max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding: 10px; scroll-behavior: smooth; }
+        #loader { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: white; z-index: 100; text-align: center; }
+        .btn-start { background: white; color: black; padding: 16px 45px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 30px rgba(255,255,255,0.4); }
+        .msg-bubble { display: inline-block; padding: 10px 18px; border-radius: 18px; margin: 5px 0; max-width: 85%; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <p id="load-status" class="text-xl font-light px-6 mb-8">Preparando la visión divina...</p>
+        <div id="startBtn" class="btn-start">ENTRAR EN COMUNIÓN</div>
+    </div>
+
+    <div id="video-container">
+        <!-- Uso directo de URL con crossorigin para maximizar compatibilidad -->
+        <video id="video-idle" loop muted playsinline preload="auto" crossorigin="anonymous">
+            <source src="https://raw.githubusercontent.com/Compualextech2/Pasatiempos/principal/Parpadeo.mp4" type="video/mp4">
+        </video>
+        <video id="video-talking" loop muted playsinline preload="auto" crossorigin="anonymous" style="display:none;">
+            <source src="https://raw.githubusercontent.com/Compualextech2/Pasatiempos/principal/habla.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="chat-ui">
+        <div id="history" class="flex flex-col"></div>
+        <div class="glass p-4 flex gap-3">
+            <input type="text" id="userInput" class="flex-1 bg-white/10 border border-white/20 rounded-xl p-4 text-white outline-none" placeholder="Habla con el Maestro...">
+            <button id="sendBtn" class="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-xl transition">Enviar</button>
+        </div>
+    </div>
+
+    <script type="module">
+        const apiKey = ""; 
+        const modelId = "gemini-2.5-flash-preview-09-2025";
+        const ttsModelId = "gemini-2.5-flash-preview-tts";
+
+        const vIdle = document.getElementById('video-idle');
+        const vTalk = document.getElementById('video-talking');
+        const startBtn = document.getElementById('startBtn');
+        const chatUi = document.getElementById('chat-ui');
+
+        let audioCtx;
+
+        // Función para verificar si el video cargó
+        function checkVideos() {
+            startBtn.style.display = "block";
+            document.getElementById('load-status').innerText = "La presencia está lista";
+        }
+
+        async function start() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+            document.getElementById('loader').style.display = "none";
+            chatUi.style.display = "block";
+            
+            // Intentar reproducir el video de parpadeo
+            vIdle.play().catch(e => {
+                console.error("Error al reproducir video:", e);
+                alert("Hijo, tu navegador bloquea el video. Intenta permitir el contenido multimedia.");
+            });
+            
+            const greet = "Hola hijo soy solo una representación del cristo, idea de Alex tecno e impulsado por IA, ¿habéis venido por respuestas?";
+            addMsg(greet, false);
+            speak(greet);
+        }
+
+        function toggleTalk(isTalking) {
+            if(isTalking) {
+                vIdle.style.display = "none";
+                vTalk.style.display = "block";
+                vTalk.play().catch(() => {});
+            } else {
+                vTalk.style.display = "none";
+                vIdle.style.display = "block";
+                vTalk.pause();
+                vTalk.currentTime = 0;
+            }
+        }
+
+        async function speak(text) {
+            try {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${ttsModelId}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Say with a calm and divine voice: ${text}` }] }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } }
+                        }
+                    })
+                });
+                const data = await resp.json();
+                const b64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                if(b64) playAudio(b64);
+            } catch (e) { console.error(e); }
+        }
+
+        function playAudio(b64) {
+            const bin = atob(b64);
+            const buf = new Int16Array(bin.length / 2);
+            for (let i = 0; i < bin.length; i += 2) buf[i / 2] = (bin.charCodeAt(i + 1) << 8) | bin.charCodeAt(i);
+            const audioBuf = audioCtx.createBuffer(1, buf.length, 24000);
+            audioBuf.getChannelData(0).set(Array.from(buf).map(v => v / 32768));
+            const src = audioCtx.createBufferSource();
+            src.buffer = audioBuf;
+            src.connect(audioCtx.destination);
+            toggleTalk(true);
+            src.start();
+            src.onended = () => toggleTalk(false);
+        }
+
+        async function send() {
+            const input = document.getElementById('userInput');
+            const q = input.value.trim();
+            if(!q) return;
+            addMsg(q, true);
+            input.value = "";
+            try {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: q }] }],
+                        systemInstruction: { parts: [{ text: "Eres Jesucristo. Responde con paz y brevedad extrema." }] }
+                    })
+                });
+                const data = await resp.json();
+                const txt = data.candidates[0].content.parts[0].text;
+                addMsg(txt, false);
+                speak(txt);
+            } catch (e) { addMsg("La conexión espiritual es débil ahora.", false); }
+        }
+
+        function addMsg(t, u) {
+            const history = document.getElementById('history');
+            const d = document.createElement('div');
+            d.className = "w-full flex " + (u ? 'justify-end' : 'justify-start');
+            d.innerHTML = `<span class="msg-bubble ${u ? 'bg-blue-600/30' : 'bg-white/10'} text-white">${t}</span>`;
+            history.appendChild(d);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        startBtn.onclick = start;
+        document.getElementById('sendBtn').onclick = send;
+        document.getElementById('userInput').onkeypress = (e) => { if(e.key === 'Enter') send(); };
+        
+        // Mostrar botón de inicio tras un pequeño retardo para asegurar carga
+        setTimeout(checkVideos, 2000);
+    </script>
+</body>
+</html>
+
