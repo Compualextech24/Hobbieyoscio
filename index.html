@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jesucristo IA - Voz Puter</title>
+    <title>Jesucristo IA - Voz Masculina</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.puter.com/v2/"></script>
     <style>
@@ -19,7 +19,8 @@
         .msg-bubble { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; font-weight: 600; line-height: 1.4; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .msg-user { background: rgba(14, 165, 233, 0.4); color: white; align-self: flex-end; }
-        .msg-christ { background: white; color: #0369a1; align-self: flex-start; }
+        /* Cuadro de texto de Jesús: Blanco con transparencia */
+        .msg-christ { background: rgba(255, 255, 255, 0.7) !important; backdrop-filter: blur(5px); color: #0369a1; align-self: flex-start; }
         .top-header { position: fixed; top: 15px; left: 0; right: 0; text-align: center; z-index: 40; color: white; font-weight: bold; text-shadow: 0 2px 4px #000; display: none; }
     </style>
 </head>
@@ -90,11 +91,11 @@
                     currentAudio = null;
                 }
                 
-                // Generar audio con Puter
-                const audio = await puter.ai.txt2speech(text);
+                // Puter intentará seleccionar una voz de varón mediante el prompt del sistema
+                // Nota: Puter gestiona las voces internamente, intentamos forzar tono masculino
+                const audio = await puter.ai.txt2speech(text, "male");
                 currentAudio = audio;
                 
-                // Control estricto de eventos de audio
                 audio.addEventListener('play', () => toggleTalk(true));
                 audio.addEventListener('ended', () => {
                     toggleTalk(false);
@@ -106,7 +107,6 @@
                     currentAudio = null;
                 });
                 
-                // Reproducir el audio
                 audio.play();
 
             } catch (e) {
@@ -148,7 +148,7 @@
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
                         messages: [
-                            { role: "system", content: "Eres Jesucristo. Responde solemne y breve. Empieza con 'Hijo mío'." },
+                            { role: "system", content: "Eres Jesucristo. Responde solemne, amoroso y breve. Empieza con 'Hijo mío'." },
                             { role: "user", content: text }
                         ]
                     })
