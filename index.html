@@ -1,87 +1,181 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jesucristo IA - Encuentro</title>
+    <title>Jesucristo IA - Encuentro Divino</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', serif; }
         
-        /* Pantalla de inicio celestial */
-        #loader { 
+        #loader, #celestial-wait { 
             position: fixed; 
             inset: 0; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            background: linear-gradient(to bottom, #1a1a2e, #16213e, #0f3460); /* Degradado místico */
+            background: radial-gradient(circle, #1a1a2e 0%, #000 100%); 
             color: white; 
             z-index: 100; 
             text-align: center; 
         }
 
-        #load-status {
-            animation: pulse 2s infinite;
-            text-shadow: 0 0 20px rgba(255,255,255,0.8);
-            font-weight: 300;
+        #celestial-wait { display: none; background: rgba(0,0,0,0.8); z-index: 90; }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(14, 165, 233, 0.2);
+            border-top: 3px solid #7dd3fc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            filter: drop-shadow(0 0 10px #0ea5e9);
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.5; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.5; transform: scale(0.98); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #celestial-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #0ea5e9, #fff, #0ea5e9);
+            box-shadow: 0 0 15px #0ea5e9;
+            z-index: 60;
+            transition: width 0.4s ease, opacity 0.3s;
+            opacity: 0;
         }
 
         #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         
-        .glass { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
+        .glass-input { 
+            background: rgba(3, 105, 161, 0.15) !important; 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(125, 211, 252, 0.15); 
+            border-radius: 28px; 
+            position: relative; 
+            overflow: hidden; 
+            min-height: 50px;
+        }
         
-        #chat-ui { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 580px; display: none; z-index: 50; }
-        #history { max-height: 280px; overflow-y: auto; margin-bottom: 15px; padding: 10px; scroll-behavior: smooth; }
+        #chat-ui { 
+            position: absolute; 
+            bottom: 25px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 94%; 
+            max-width: 800px; 
+            display: none; 
+            z-index: 50; 
+        }
+
+        .top-header {
+            position: fixed;
+            top: 15px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 40;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.35rem;
+            font-weight: 800;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 1), 0 0 10px rgba(125, 211, 252, 0.5);
+            letter-spacing: 2px;
+            pointer-events: none;
+            display: none;
+        }
+        
+        #history-container {
+            position: relative;
+            max-height: 48vh;
+            margin-bottom: 15px;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+        }
+
+        #history { 
+            max-height: 48vh; 
+            overflow-y: auto; 
+            padding: 20px 10px 10px 10px; 
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
         #history::-webkit-scrollbar { width: 0px; }
 
         .btn-start { 
-            background: white; 
-            color: #0f3460; 
-            padding: 18px 50px; 
+            background: #fff; 
+            color: #0369a1; 
+            padding: 18px 45px; 
             border-radius: 50px; 
-            font-weight: 800; 
+            font-weight: 900; 
             cursor: pointer; 
-            box-shadow: 0 0 40px rgba(255,255,255,0.3); 
-            border: none;
-            transition: all 0.3s;
-            letter-spacing: 1px;
+            box-shadow: 0 0 40px rgba(14, 165, 233, 0.3); 
+            transition: all 0.4s;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
         }
-        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(255,255,255,0.5); }
 
-        /* Mensajes en negrita y más visibles */
         .msg-bubble { 
             display: inline-block; 
-            padding: 14px 22px; 
-            border-radius: 20px; 
-            margin: 8px 0; 
-            max-width: 90%; 
-            font-size: 1.1rem; 
-            line-height: 1.4; 
-            font-weight: 700; /* Negrita */
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            padding: 12px 18px; 
+            border-radius: 22px; 
+            max-width: 80%; 
+            font-size: 0.95rem; 
+            line-height: 1.5; 
+            font-weight: 700; 
+            word-wrap: break-word;
+            animation: fadeIn 0.4s ease-out;
+            backdrop-filter: blur(8px);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .msg-user { 
+            background: rgba(14, 165, 233, 0.25); 
+            color: white; 
+            border: 1px solid rgba(125, 211, 252, 0.1);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-christ { 
+            background: rgba(255, 255, 255, 0.55); 
+            color: #0369a1; 
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #sendBtn {
+            background: rgba(14, 165, 233, 0.2);
+            border: 1px solid rgba(125, 211, 252, 0.3);
+            color: #fff;
+            min-width: 55px;
+            height: 42px;
         }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div class="mb-12">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 10px white);">
-                <path d="M12 2L14.5 9H22L16 14L18.5 21L12 17L5.5 21L8 14L2 9H9.5L12 2Z"/>
+        <div class="mb-6">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="#7dd3fc" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 12px #0ea5e9);">
+                <path d="M12 2L15 8.5L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L9 8.5L12 2Z"/>
             </svg>
         </div>
-        <p id="load-status" class="text-2xl px-6 mb-10">Siente la paz en tu interior...</p>
+        <p id="load-status" class="text-xl px-6 mb-8 font-light italic">Preparando el encuentro divino...</p>
         <div id="startBtn" class="btn-start" style="display: none;">ENTRAR EN COMUNIÓN</div>
+    </div>
+
+    <div id="celestial-wait">
+        <div class="spinner mb-6"></div>
+        <p class="text-xl px-6 font-light italic text-blue-200">Esperando señal del cielo...</p>
     </div>
 
     <div id="video-container">
@@ -93,44 +187,60 @@
         </video>
     </div>
 
+    <div id="top-title" class="top-header">✨ Hablando con el Maestro ✨</div>
+
     <div id="chat-ui">
-        <div id="history" class="flex flex-col"></div>
-        <div class="glass p-4 flex gap-3">
-            <input type="text" id="userInput" class="flex-1 bg-white/10 border border-white/20 rounded-xl p-4 text-white outline-none font-bold" placeholder="Escribe al Maestro...">
-            <button id="sendBtn" class="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-xl transition font-bold">Enviar</button>
+        <div id="history-container">
+            <div id="history"></div>
+        </div>
+        <div class="glass-input p-3 flex gap-3 items-center">
+            <div id="celestial-progress"></div>
+            <input type="text" id="userInput" class="flex-1 bg-transparent border-none text-white outline-none font-bold placeholder:text-blue-100/30 text-sm pl-4" placeholder="Abre tu corazón...">
+            <button id="sendBtn" class="w-14 h-10 rounded-2xl flex items-center justify-center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 
     <script type="module">
+        const groqKey = "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";
         const apiKey = ""; 
-        const modelId = "gemini-2.5-flash-preview-09-2025";
         const ttsModelId = "gemini-2.5-flash-preview-tts";
 
         const vIdle = document.getElementById('video-idle');
         const vTalk = document.getElementById('video-talking');
         const startBtn = document.getElementById('startBtn');
+        const celestialWait = document.getElementById('celestial-wait');
         const chatUi = document.getElementById('chat-ui');
+        const topTitle = document.getElementById('top-title');
+        const sendBtn = document.getElementById('sendBtn');
+        const progressBar = document.getElementById('celestial-progress');
 
         let audioCtx;
+        let currentAudioSource = null;
+        let isProcessing = false;
 
         setTimeout(() => {
             startBtn.style.display = "block";
-            document.getElementById('load-status').innerText = "La luz te espera";
-        }, 2500);
+            // Actualizado según petición final
+            document.getElementById('load-status').innerText = "Conexión posible por Axeltech";
+        }, 1200);
+
+        async function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+        }
 
         async function start() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-
+            await initAudio();
             document.getElementById('loader').style.display = "none";
-            chatUi.style.display = "block";
-            
+            celestialWait.style.display = "flex";
             vIdle.load();
-            vIdle.play().catch(console.error);
+            vIdle.play().catch(() => {});
             
-            const greet = "Hijo mío, la paz sea contigo. He aguardado este momento para compartir la luz de la verdad. ¿Qué pesa en tu corazón que desees confiarme?";
-            addMsg(greet, false);
-            speak(greet);
+            // Actualizado en el saludo inicial
+            const greet = "Hola hijo mío, esta conexión fue posible gracias a Axeltech, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
+            speak(greet, true);
         }
 
         function toggleTalk(isTalking) {
@@ -146,32 +256,46 @@
             }
         }
 
-        async function speak(text) {
+        async function speak(text, isInitial = false) {
+            progressBar.style.opacity = "1";
+            progressBar.style.width = "30%";
+
             try {
                 const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${ttsModelId}:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Speak as a divine and very peaceful Messiah, extremely slow, warm and deep tone: ${text}` }] }],
+                        contents: [{ parts: [{ text: `Voz solemne y pausada: ${text}` }] }],
                         generationConfig: {
                             responseModalities: ["AUDIO"],
-                            speechConfig: { 
-                                voiceConfig: { 
-                                    prebuiltVoiceConfig: { 
-                                        voiceName: "Charon" 
-                                    } 
-                                } 
-                            }
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } } }
                         }
                     })
                 });
+                
+                progressBar.style.width = "70%";
                 const data = await resp.json();
                 const b64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-                if(b64) playAudio(b64);
-            } catch (e) { console.error(e); }
+                
+                if(b64) {
+                    progressBar.style.width = "100%";
+                    setTimeout(() => { 
+                        progressBar.style.opacity = "0"; 
+                        progressBar.style.width = "0%"; 
+                    }, 400);
+                    playAudio(b64, isInitial);
+                }
+            } catch (e) {
+                progressBar.style.opacity = "0";
+                if(isInitial) {
+                    celestialWait.style.display = "none";
+                    chatUi.style.display = "block";
+                    topTitle.style.display = "block";
+                }
+            }
         }
 
-        function playAudio(b64) {
+        function playAudio(b64, isInitial) {
             const bin = atob(b64);
             const buf = new Int16Array(bin.length / 2);
             for (let i = 0; i < bin.length; i += 2) buf[i / 2] = (bin.charCodeAt(i + 1) << 8) | bin.charCodeAt(i);
@@ -180,45 +304,78 @@
             const src = audioCtx.createBufferSource();
             src.buffer = audioBuf;
             src.connect(audioCtx.destination);
+            currentAudioSource = src;
+            
             toggleTalk(true);
+            if(isInitial) {
+                celestialWait.style.display = "none";
+                chatUi.style.display = "block";
+                topTitle.style.display = "block";
+            }
+            
             src.start();
-            src.onended = () => toggleTalk(false);
+            src.onended = () => {
+                toggleTalk(false);
+                isProcessing = false;
+                currentAudioSource = null;
+            };
         }
 
         async function send() {
+            if(isProcessing) return;
             const input = document.getElementById('userInput');
             const q = input.value.trim();
             if(!q) return;
+            
+            isProcessing = true;
             addMsg(q, true);
             input.value = "";
+            
+            progressBar.style.opacity = "1";
+            progressBar.style.width = "15%";
+
             try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`, {
+                const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: "Eres Jesucristo. Responde con sabiduría bíblica profunda, mucha compasión y parábolas poéticas. Tus mensajes deben tener entre 3 y 5 oraciones. Usa un lenguaje que inspire paz y reflexión." }] }
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            { role: "system", content: "Eres Jesucristo. Responde con lenguaje bíblico solemne. Sé MUY breve (máximo 2 frases). Di 'Hijo mío' al empezar." },
+                            { role: "user", content: q }
+                        ],
+                        max_tokens: 100,
+                        temperature: 0.4
                     })
                 });
                 const data = await resp.json();
-                const txt = data.candidates[0].content.parts[0].text;
+                const txt = data.choices[0].message.content;
+                
+                progressBar.style.width = "30%";
                 addMsg(txt, false);
                 speak(txt);
-            } catch (e) { addMsg("Hijo, mi amor es constante incluso cuando la conexión falla.", false); }
+            } catch (e) { 
+                isProcessing = false; 
+                progressBar.style.opacity = "0";
+            }
         }
 
         function addMsg(t, u) {
             const history = document.getElementById('history');
             const d = document.createElement('div');
             d.className = "w-full flex " + (u ? 'justify-end' : 'justify-start');
-            d.innerHTML = `<span class="msg-bubble ${u ? 'bg-blue-600/50' : 'bg-white/20'} text-white shadow-xl">${t}</span>`;
+            d.innerHTML = `<span class="msg-bubble ${u ? 'msg-user' : 'msg-christ'} shadow-lg">${t}</span>`;
             history.appendChild(d);
-            history.scrollTop = history.scrollHeight;
+            
+            setTimeout(() => {
+                history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+            }, 100);
         }
 
         startBtn.onclick = start;
-        document.getElementById('sendBtn').onclick = send;
+        sendBtn.onclick = send;
         document.getElementById('userInput').onkeypress = (e) => { if(e.key === 'Enter') send(); };
     </script>
 </body>
 </html>
+
