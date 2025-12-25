@@ -22,16 +22,16 @@
             text-align: center; 
         }
 
-        #celestial-wait { display: none; background: rgba(0,0,0,0.8); z-index: 90; }
+        #celestial-wait { display: none; background: rgba(0,0,0,0.85); z-index: 110; }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(14, 165, 233, 0.2);
-            border-top: 3px solid #7dd3fc;
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(14, 165, 233, 0.1);
+            border-top: 4px solid #7dd3fc;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            filter: drop-shadow(0 0 10px #0ea5e9);
+            filter: drop-shadow(0 0 15px #0ea5e9);
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -58,7 +58,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
         
         .glass-input { 
@@ -86,7 +86,6 @@
             width: 95%; 
             text-align: center;
             text-transform: uppercase;
-            white-space: nowrap;
         }
         
         #chat-ui { 
@@ -100,7 +99,7 @@
             z-index: 50; 
         }
         
-        #history { max-height: 42vh; overflow-y: auto; margin-bottom: 12px; padding: 10px; scroll-behavior: smooth; }
+        #history { max-height: 40vh; overflow-y: auto; margin-bottom: 12px; padding: 10px; scroll-behavior: smooth; }
         #history::-webkit-scrollbar { width: 0px; }
 
         .btn-start { 
@@ -127,24 +126,8 @@
             font-weight: 700; 
         }
 
-        .msg-user { 
-            background: rgba(14, 165, 233, 0.35); 
-            color: white; 
-            border: 1px solid rgba(125, 211, 252, 0.2);
-        }
-
-        .msg-christ { 
-            background: rgba(255, 255, 255, 0.75); 
-            color: #0369a1; 
-        }
-
-        #sendBtn {
-            background: rgba(14, 165, 233, 0.3);
-            border: 1px solid rgba(125, 211, 252, 0.4);
-            color: #fff;
-            min-width: 55px;
-            height: 42px;
-        }
+        .msg-user { background: rgba(14, 165, 233, 0.35); color: white; border: 1px solid rgba(125, 211, 252, 0.2); }
+        .msg-christ { background: rgba(255, 255, 255, 0.85); color: #0369a1; }
     </style>
 </head>
 <body>
@@ -159,7 +142,7 @@
         <div id="startBtn" class="btn-start" style="display: none;">ENTRAR EN COMUNIÓN</div>
     </div>
 
-    <!-- Círculo de carga restaurado -->
+    <!-- Pantalla de carga Celestial -->
     <div id="celestial-wait">
         <div class="spinner mb-6"></div>
         <p class="text-xl px-6 font-light italic text-blue-200">Esperando señal del cielo...</p>
@@ -168,10 +151,10 @@
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
-        <video id="video-idle" loop muted playsinline preload="auto" style="opacity: 1; z-index: 10;">
+        <video id="video-idle" loop muted playsinline style="opacity: 1; z-index: 10;">
             <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
         </video>
-        <video id="video-talking" loop muted playsinline preload="auto" style="opacity: 0; z-index: 5;">
+        <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 5;">
             <source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4">
         </video>
     </div>
@@ -181,7 +164,7 @@
         <div class="glass-input p-3 flex gap-3 items-center">
             <div id="celestial-progress"></div>
             <input type="text" id="userInput" class="flex-1 bg-transparent border-none text-white outline-none font-bold placeholder:text-blue-100/40 text-sm pl-4" placeholder="Abre tu corazón...">
-            <button id="sendBtn" class="w-14 h-10 rounded-2xl flex items-center justify-center">
+            <button id="sendBtn" class="w-14 h-10 rounded-2xl flex items-center justify-center bg-sky-500/20 border border-sky-300/30 text-white">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
@@ -201,21 +184,21 @@
 
         let isProcessing = false;
 
-        window.addEventListener('load', () => {
+        window.onload = () => {
             setTimeout(() => {
                 startBtn.style.display = "block";
                 document.getElementById('load-status').innerText = "Conexión posible por Alextech";
-            }, 1200);
-        });
+            }, 1000);
+        };
 
         async function start() {
             document.getElementById('loader').style.display = "none";
             celestialWait.style.display = "flex";
             
-            // Iniciar videos
-            vIdle.play().catch(e => console.log("Video Error:", e));
-            vTalk.play().then(() => vTalk.pause()).catch(() => {});
-            
+            // Forzar carga y reproducción inicial
+            vIdle.play().catch(() => {});
+            vTalk.load(); 
+
             const greet = "Hola hijo mío, esta conexión fue posible gracias a Alex tecno, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
             speak(greet, true);
         }
@@ -237,31 +220,22 @@
 
         async function speak(text, isInitial = false) {
             if (!isInitial) {
-                progressBar.style.opacity = "1";
-                progressBar.style.width = "40%";
+                celestialWait.style.display = "flex"; // Mostramos espera mientras Puter procesa
             }
 
             try {
-                // Verificar Puter
-                if (typeof puter === 'undefined') {
-                    console.error("Puter no está cargado");
-                    throw new Error("Puter offline");
-                }
+                if (typeof puter === 'undefined') throw new Error("Puter no cargado");
 
-                // Obtener audio de Puter (Andrés)
+                // Solicitar audio a Puter
                 const audio = await puter.ai.txt2speech(text, 'Andres');
                 
+                // Una vez tenemos el audio, quitamos la pantalla de espera
+                celestialWait.style.display = "none";
+                
                 if (isInitial) {
-                    celestialWait.style.display = "none";
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
                 }
-
-                progressBar.style.width = "100%";
-                setTimeout(() => { 
-                    progressBar.style.opacity = "0"; 
-                    progressBar.style.width = "0%"; 
-                }, 400);
 
                 toggleTalk(true);
                 
@@ -273,14 +247,13 @@
                 audio.play();
 
             } catch (e) {
-                console.error("Error TTS:", e);
+                console.error("Error en Audio:", e);
+                celestialWait.style.display = "none";
                 if (isInitial) {
-                    celestialWait.style.display = "none";
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
                 }
                 isProcessing = false;
-                progressBar.style.opacity = "0";
             }
         }
 
@@ -295,7 +268,7 @@
             input.value = "";
             
             progressBar.style.opacity = "1";
-            progressBar.style.width = "15%";
+            progressBar.style.width = "30%";
 
             try {
                 const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -308,18 +281,20 @@
                             { role: "user", content: q }
                         ],
                         max_tokens: 100,
-                        temperature: 0.4
+                        temperature: 0.5
                     })
                 });
                 const data = await resp.json();
                 const txt = data.choices[0].message.content;
                 
-                progressBar.style.width = "30%"; 
+                progressBar.style.width = "100%";
+                setTimeout(() => { progressBar.style.opacity = "0"; }, 500);
+
                 addMsg(txt, false);
                 speak(txt);
             } catch (e) { 
                 console.error("Error Groq:", e);
-                isProcessing = false; 
+                isProcessing = false;
                 progressBar.style.opacity = "0";
             }
         }
@@ -328,7 +303,7 @@
             const history = document.getElementById('history');
             const d = document.createElement('div');
             d.className = "w-full flex " + (u ? 'justify-end' : 'justify-start');
-            d.innerHTML = `<span class="msg-bubble ${u ? 'msg-user' : 'msg-christ'} shadow-lg">${t}</span>`;
+            d.innerHTML = `<span class="msg-bubble ${u ? 'msg-user' : 'msg-christ'} shadow-xl">${t}</span>`;
             history.appendChild(d);
             history.scrollTop = history.scrollHeight;
         }
