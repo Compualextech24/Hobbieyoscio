@@ -195,15 +195,12 @@
             document.getElementById('loader').style.display = "none";
             celestialWait.style.display = "flex";
             
-            // Verificar Puter
             if (typeof puter === 'undefined') {
                 console.error("❌ Puter no está disponible");
                 alert("Error: Puter no se cargó correctamente. Recarga la página.");
                 return;
             }
-            console.log("✅ Puter está disponible");
             
-            // Forzar carga y reproducción inicial
             vIdle.play().catch(e => console.error("Error video idle:", e));
             vTalk.load(); 
 
@@ -232,23 +229,16 @@
             }
 
             try {
-                // Verificar que Puter esté disponible
                 if (typeof puter === 'undefined') {
                     throw new Error("Puter no está cargado");
                 }
 
-                console.log("🎤 Intentando generar audio con Puter...");
-                console.log("📝 Texto:", text);
-
-                // Solicitar audio a Puter con timeout
-                const audioPromise = puter.ai.txt2speech(text, 'Andres');
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Timeout en Puter")), 15000)
-                );
-
-                const audio = await Promise.race([audioPromise, timeoutPromise]);
-                
-                console.log("✅ Audio generado exitosamente");
+                // Implementación solicitada: Voz de Andrés con motor Neural en Español MX
+                const audio = await puter.ai.txt2speech(text, {
+                    voice: 'Andres',
+                    engine: 'neural',
+                    language: 'es-MX'
+                });
                 
                 celestialWait.style.display = "none";
                 
@@ -260,13 +250,11 @@
                 toggleTalk(true);
                 
                 audio.onended = () => {
-                    console.log("🔇 Audio terminado");
                     toggleTalk(false);
                     isProcessing = false;
                 };
 
-                audio.onerror = (e) => {
-                    console.error("❌ Error al reproducir audio:", e);
+                audio.onerror = () => {
                     toggleTalk(false);
                     isProcessing = false;
                 };
@@ -274,20 +262,12 @@
                 await audio.play();
 
             } catch (e) {
-                console.error("❌ Error completo en Audio:", e);
-                console.error("Tipo de error:", e.name);
-                console.error("Mensaje:", e.message);
-                
+                console.error("❌ Error en Audio:", e);
                 celestialWait.style.display = "none";
-                
                 if (isInitial) {
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
                 }
-                
-                // Mostrar error al usuario
-                addMsg("⚠️ Error al generar audio. Reintenta por favor.", false);
-                
                 isProcessing = false;
             }
         }
@@ -349,3 +329,4 @@
     </script>
 </body>
 </html>
+
