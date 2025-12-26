@@ -127,7 +127,8 @@
         }
 
         .msg-user { background: rgba(14, 165, 233, 0.35); color: white; border: 1px solid rgba(125, 211, 252, 0.2); }
-        .msg-christ { background: rgba(255, 255, 255, 0.65); color: #0369a1; }
+        /* Transparencia aplicada aquí (0.5) */
+        .msg-christ { background: rgba(255, 255, 255, 0.5); color: #0369a1; }
     </style>
 </head>
 <body>
@@ -150,8 +151,12 @@
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
-       <video id="video-idle" loop muted playsinline preload="auto" style="opacity: 1; z-index: 10;">
-<video id="video-talking" loop muted playsinline preload="auto" style="opacity: 0; z-index: 5;">
+        <video id="video-idle" loop muted playsinline style="opacity: 1; z-index: 10;">
+            <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
+        </video>
+        <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 5;">
+            <source src="https://compualextech24.github.io/Hobbieyoscio/Habla.mp4" type="video/mp4">
+        </video>
     </div>
 
     <div id="chat-ui">
@@ -179,41 +184,23 @@
 
         let isProcessing = false;
 
-     let videosLoaded = false;
-
-window.onload = () => {
-    vIdle.load();
-    vTalk.load();
-    
-    Promise.all([
-        new Promise(resolve => {
-            if (vIdle.readyState >= 3) resolve();
-            else vIdle.addEventListener('canplaythrough', resolve, { once: true });
-        }),
-        new Promise(resolve => {
-            if (vTalk.readyState >= 3) resolve();
-            else vTalk.addEventListener('canplaythrough', resolve, { once: true });
-        })
-    ]).then(() => {
-        console.log("✅ Videos precargados");
-        videosLoaded = true;
-        startBtn.style.display = "block";
-        document.getElementById('load-status').innerText = "Conexión posible por Alextech";
-    });
-};
+        window.onload = () => {
+            setTimeout(() => {
+                startBtn.style.display = "block";
+                document.getElementById('load-status').innerText = "Conexión posible por Alextech";
+            }, 1000);
+        };
 
         async function start() {
-            console.log("🚀 Iniciando aplicación...");
             document.getElementById('loader').style.display = "none";
             celestialWait.style.display = "flex";
             
             if (typeof puter === 'undefined') {
-                console.error("❌ Puter no está disponible");
                 alert("Error: Puter no se cargó correctamente. Recarga la página.");
                 return;
             }
             
-            vIdle.play().catch(e => console.error("Error video idle:", e));
+            vIdle.play().catch(() => {});
             vTalk.load(); 
 
             const greet = "Hola hijo mío, esta conexión fue posible gracias a Alex tecno, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
@@ -241,11 +228,6 @@ window.onload = () => {
             }
 
             try {
-                if (typeof puter === 'undefined') {
-                    throw new Error("Puter no está cargado");
-                }
-
-                // Implementación solicitada: Voz de Andrés con motor Neural en Español MX
                 const audio = await puter.ai.txt2speech(text, {
                     voice: 'Andres',
                     engine: 'neural',
@@ -274,7 +256,6 @@ window.onload = () => {
                 await audio.play();
 
             } catch (e) {
-                console.error("❌ Error en Audio:", e);
                 celestialWait.style.display = "none";
                 if (isInitial) {
                     mainTitle.style.display = "block";
@@ -320,7 +301,6 @@ window.onload = () => {
                 addMsg(txt, false);
                 await speak(txt);
             } catch (e) { 
-                console.error("❌ Error Groq:", e);
                 isProcessing = false;
                 progressBar.style.opacity = "0";
             }
@@ -341,4 +321,3 @@ window.onload = () => {
     </script>
 </body>
 </html>
-
