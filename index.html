@@ -56,7 +56,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease-in-out;
         }
         
         .glass-input { 
@@ -143,11 +143,13 @@
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
+        <!-- El video de parpadeo siempre está debajo como base -->
         <video id="video-idle" loop muted playsinline style="opacity: 1; z-index: 10;">
             <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
         </video>
-        <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 5;">
-            <source src="https://compualextech24.github.io/Hobbieyoscio/Habla.mp4" type="video/mp4">
+        <!-- El video de habla se superpone solo cuando es necesario -->
+        <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 11;">
+            <source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -186,12 +188,13 @@
             document.getElementById('loader').style.display = "none";
             
             if (typeof puter === 'undefined') {
-                alert("Error: Puter no se cargó correctamente. Recarga la página.");
+                alert("Error: Puter no se cargó correctamente.");
                 return;
             }
             
+            // Iniciar ambos videos para que estén listos
             vIdle.play().catch(() => {});
-            vTalk.load(); 
+            vTalk.play().then(() => vTalk.pause()).catch(() => {}); 
 
             const greet = "Hola hijo mío, esta conexión fue posible gracias a Alex tecno, posiblemente porque buscas respuesta, de ser así: no os dudes en preguntar.";
             await speak(greet, true);
@@ -200,13 +203,9 @@
         function toggleTalk(isTalking) {
             if(isTalking) {
                 vTalk.style.opacity = "1";
-                vTalk.style.zIndex = "20";
-                vIdle.style.opacity = "0";
                 vTalk.play().catch(() => {});
             } else {
                 vTalk.style.opacity = "0";
-                vTalk.style.zIndex = "5";
-                vIdle.style.opacity = "1";
                 vTalk.pause();
                 vTalk.currentTime = 0;
             }
@@ -225,7 +224,8 @@
                     chatUi.style.display = "block";
                 }
 
-                toggleTalk(true);
+                // Sincronización precisa con el audio
+                audio.onplay = () => toggleTalk(true);
                 
                 audio.onended = () => {
                     toggleTalk(false);
@@ -240,10 +240,12 @@
                 await audio.play();
 
             } catch (e) {
+                console.error("Error en voz:", e);
                 if (isInitial) {
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
                 }
+                toggleTalk(false);
                 isProcessing = false;
             }
         }
