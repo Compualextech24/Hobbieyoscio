@@ -9,7 +9,7 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', serif; }
         
-        #loader, #celestial-wait { 
+        #loader { 
             position: fixed; 
             inset: 0; 
             display: flex; 
@@ -21,8 +21,6 @@
             z-index: 100; 
             text-align: center; 
         }
-
-        #celestial-wait { display: none; background: rgba(0,0,0,0.85); z-index: 110; }
 
         .spinner {
             width: 60px;
@@ -127,7 +125,6 @@
         }
 
         .msg-user { background: rgba(14, 165, 233, 0.35); color: white; border: 1px solid rgba(125, 211, 252, 0.2); }
-        /* Transparencia aplicada aquí (0.5) */
         .msg-christ { background: rgba(255, 255, 255, 0.5); color: #0369a1; }
     </style>
 </head>
@@ -143,11 +140,6 @@
         <div id="startBtn" class="btn-start" style="display: none;">ENTRAR EN COMUNIÓN</div>
     </div>
 
-    <div id="celestial-wait">
-        <div class="spinner mb-6"></div>
-        <p class="text-xl px-6 font-light italic text-blue-200">Esperando señal del cielo...</p>
-    </div>
-
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
@@ -155,7 +147,7 @@
             <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
         </video>
         <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 5;">
-            <source src="https://compualextech24.github.io/Hobbieyoscio/Habla.mp4" type="video/mp4">
+            <source src="https://compualextech24.github.io/Hobbieyoscio/habla.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -176,7 +168,6 @@
         const vIdle = document.getElementById('video-idle');
         const vTalk = document.getElementById('video-talking');
         const startBtn = document.getElementById('startBtn');
-        const celestialWait = document.getElementById('celestial-wait');
         const mainTitle = document.getElementById('main-title');
         const chatUi = document.getElementById('chat-ui');
         const sendBtn = document.getElementById('sendBtn');
@@ -193,7 +184,6 @@
 
         async function start() {
             document.getElementById('loader').style.display = "none";
-            celestialWait.style.display = "flex";
             
             if (typeof puter === 'undefined') {
                 alert("Error: Puter no se cargó correctamente. Recarga la página.");
@@ -223,18 +213,12 @@
         }
 
         async function speak(text, isInitial = false) {
-            if (!isInitial) {
-                celestialWait.style.display = "flex";
-            }
-
             try {
                 const audio = await puter.ai.txt2speech(text, {
                     voice: 'Andres',
                     engine: 'neural',
                     language: 'es-MX'
                 });
-                
-                celestialWait.style.display = "none";
                 
                 if (isInitial) {
                     mainTitle.style.display = "block";
@@ -256,7 +240,6 @@
                 await audio.play();
 
             } catch (e) {
-                celestialWait.style.display = "none";
                 if (isInitial) {
                     mainTitle.style.display = "block";
                     chatUi.style.display = "block";
@@ -289,7 +272,7 @@
                             { role: "user", content: q }
                         ],
                         max_tokens: 100,
-                        temperature: 0.5
+                        temperature: 0.65
                     })
                 });
                 const data = await resp.json();
