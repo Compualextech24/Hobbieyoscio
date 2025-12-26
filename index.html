@@ -150,12 +150,8 @@
     <h1 id="main-title">✨ "HABLANDO CON EL MAESTRO" ✨</h1>
 
     <div id="video-container">
-        <video id="video-idle" loop muted playsinline style="opacity: 1; z-index: 10;">
-            <source src="https://compualextech24.github.io/Hobbieyoscio/Parpadeo.mp4" type="video/mp4">
-        </video>
-        <video id="video-talking" loop muted playsinline style="opacity: 0; z-index: 5;">
-            <source src="https://compualextech24.github.io/Hobbieyoscio/Habla.mp4" type="video/mp4">
-        </video>
+       <video id="video-idle" loop muted playsinline preload="auto" style="opacity: 1; z-index: 10;">
+<video id="video-talking" loop muted playsinline preload="auto" style="opacity: 0; z-index: 5;">
     </div>
 
     <div id="chat-ui">
@@ -183,12 +179,28 @@
 
         let isProcessing = false;
 
-        window.onload = () => {
-            setTimeout(() => {
-                startBtn.style.display = "block";
-                document.getElementById('load-status').innerText = "Conexión posible por Alextech";
-            }, 1000);
-        };
+     let videosLoaded = false;
+
+window.onload = () => {
+    vIdle.load();
+    vTalk.load();
+    
+    Promise.all([
+        new Promise(resolve => {
+            if (vIdle.readyState >= 3) resolve();
+            else vIdle.addEventListener('canplaythrough', resolve, { once: true });
+        }),
+        new Promise(resolve => {
+            if (vTalk.readyState >= 3) resolve();
+            else vTalk.addEventListener('canplaythrough', resolve, { once: true });
+        })
+    ]).then(() => {
+        console.log("✅ Videos precargados");
+        videosLoaded = true;
+        startBtn.style.display = "block";
+        document.getElementById('load-status').innerText = "Conexión posible por Alextech";
+    });
+};
 
         async function start() {
             console.log("🚀 Iniciando aplicación...");
