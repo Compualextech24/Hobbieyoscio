@@ -211,26 +211,58 @@
             }
         }
 
-        async function speak(text, isInitial = false) {
-            try {
-                const audio = await puter.ai.txt2speech(text, {
-                    voice: 'Andres',
-                    engine: 'neural',
-                    language: 'es-MX'
-                });
-                
-                if (isInitial) {
-                    mainTitle.style.display = "block";
-                    chatUi.style.display = "block";
-                }
+      async function speak(text, isInitial = false) {
+    try {
+        // NUEVA FORMA: Usar tu servidor local con Piper
+        const response = await fetch('http://localhost:3000/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
 
-                // Sincronización precisa con el audio
-                audio.onplay = () => toggleTalk(true);
-                
-                audio.onended = () => {
-                    toggleTalk(false);
-                    isProcessing = false;
-                };
+        const data = await response.json();
+        
+        // Convertir el base64 a un Blob de audio
+        const audioData = atob(data.audio);
+        const arrayBuffer = new Uint8Array(audioData.length);
+        for (let i = 0; i < audioData.length; i++) {
+            arrayBuffer[i] = audioData.charCodeAt(i);
+        }
+        const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(blob);
+        
+        const audio = new Audio(audioUrl);
+        
+        if (isInitial) {
+            mainTitle.style.display = "block";
+            chatUi.style.display = "block";
+        }
+
+        audio.onplay = () => toggleTalk(true);
+        
+        audio.onended = () => {
+            toggleTalk(false);
+            isProcessing = false;
+            URL.revokeObjectURL(audioUrl); // Limpiar memoria
+        };
+
+        audio.onerror = () => {
+            toggleTalk(false);
+            isProcessing = false;
+        };
+
+        await audio.play();
+
+    } catch (e) {
+        console.error("Error en voz:", e);
+        if (isInitial) {
+            mainTitle.style.display = "block";
+            chatUi.style.display = "block";
+        }
+        toggleTalk(false);
+        isProcessing = false;
+    }
+}
 
                 audio.onerror = () => {
                     toggleTalk(false);
